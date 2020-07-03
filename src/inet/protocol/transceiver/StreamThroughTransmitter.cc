@@ -30,7 +30,6 @@ void StreamThroughTransmitter::initialize(int stage)
 
 StreamThroughTransmitter::~StreamThroughTransmitter()
 {
-    delete txPacket;
     cancelAndDelete(txEndTimer);
 }
 
@@ -46,8 +45,9 @@ void StreamThroughTransmitter::pushPacket(Packet *packet, cGate *gate)
 {
     Enter_Method("pushPacket");
     take(packet);
-    if (isTransmitting())
-        abortTx();
+//    throw cRuntimeError("Does not support");
+//    if (isTransmitting())
+//        abortTx();
     startTx(packet);
 }
 
@@ -62,69 +62,64 @@ void StreamThroughTransmitter::pushPacketEnd(Packet *packet, cGate *gate, bps da
 {
     Enter_Method("pushPacketEnd");
     take(packet);
-    delete txPacket;
-    txPacket = packet;
-    auto signal = encodePacket(txPacket);
+    delete txSignal;
+    txSignal = encodePacket(packet);
     cancelEvent(txEndTimer);
-    scheduleTxEndTimer(signal);
-    delete signal;
+    scheduleTxEndTimer(txSignal);
 }
 
 void StreamThroughTransmitter::pushPacketProgress(Packet *packet, cGate *gate, bps datarate, b position, b extraProcessableLength)
 {
     Enter_Method("pushPacketProgress");
     take(packet);
-    delete txPacket;
-    txPacket = packet;
+    delete txSignal;
+    txSignal = encodePacket(packet);
     clocktime_t timePosition = getClockTime() - txStartTime;
-    int bitPosition = std::floor(datarate.get() * timePosition.dbl());
-    auto signal = encodePacket(txPacket);
-    sendPacketProgress(signal, outputGate, 0, signal->getDuration(), bps(datarate).get(), bitPosition, CLOCKTIME_AS_SIMTIME(timePosition));
+    b bitPosition = b(std::floor(datarate.get() * timePosition.dbl()));
+    sendPacketProgress(txSignal, bitPosition, timePosition);
     cancelEvent(txEndTimer);
-    scheduleTxEndTimer(signal);
+    scheduleTxEndTimer(txSignal);
 }
 
 void StreamThroughTransmitter::startTx(Packet *packet)
 {
-    ASSERT(txPacket == nullptr);
     datarate = bps(*dataratePar);
-    txPacket = packet;
     txStartTime = getClockTime();
-    auto signal = encodePacket(txPacket);
-    EV_INFO << "Starting transmission: packetName = " << txPacket->getName() << ", length = " << txPacket->getTotalLength() << ", duration = " << signal->getDuration() << std::endl;
-    scheduleTxEndTimer(signal);
-    emit(transmissionStartedSignal, signal);
-    sendPacketStart(signal, outputGate, 0, signal->getDuration(), bps(datarate).get());
+    txSignal = encodePacket(packet);
+    EV_INFO << "Starting transmission: packetName = " << packet->getName() << ", length = " << packet->getTotalLength() << ", duration = " << txSignal->getDuration() << std::endl;
+    scheduleTxEndTimer(txSignal);
+    emit(transmissionStartedSignal, txSignal);
+    sendPacketStart(txSignal->dup());
 }
 
 void StreamThroughTransmitter::endTx()
 {
-    EV_INFO << "Ending transmission: packetName = " << txPacket->getName() << std::endl;
-    auto signal = encodePacket(txPacket);
-    emit(transmissionEndedSignal, signal);
-    sendPacketEnd(signal, outputGate, 0, signal->getDuration(), bps(datarate).get());
-    producer->handlePushPacketProcessed(txPacket, inputGate->getPathStartGate(), true);
-    delete txPacket;
-    txPacket = nullptr;
+    auto packet = check_and_cast<Packet *>(txSignal->getEncapsulatedPacket());
+    EV_INFO << "Ending transmission: packetName = " << packet->getName() << std::endl;
+    emit(transmissionEndedSignal, txSignal);
+    sendPacketEnd(txSignal);
+    txSignal = nullptr;
+    txId = -1;
     txStartTime = -1;
+    // TODO: dup packet?
+    producer->handlePushPacketProcessed(packet, inputGate->getPathStartGate(), true);
     producer->handleCanPushPacket(inputGate->getPathStartGate());
 }
 
-void StreamThroughTransmitter::abortTx()
-{
-    cancelEvent(txEndTimer);
-    b transmittedLength = getPushPacketProcessedLength(txPacket, inputGate);
-    txPacket->eraseAtBack(txPacket->getTotalLength() - transmittedLength);
-    auto signal = encodePacket(txPacket);
-    EV_INFO << "Aborting transmission: packetName = " << txPacket->getName() << ", length = " << txPacket->getTotalLength() << ", duration = " << signal->getDuration() << std::endl;
-    emit(transmissionEndedSignal, signal);
-    sendPacketEnd(signal, outputGate, 0, signal->getDuration(), bps(datarate).get());
-    producer->handlePushPacketProcessed(txPacket, inputGate->getPathStartGate(), false);
-    delete txPacket;
-    txPacket = nullptr;
-    txStartTime = -1;
-    producer->handleCanPushPacket(inputGate->getPathStartGate());
-}
+//void StreamThroughTransmitter::abortTx()
+//{
+//    cancelEvent(txEndTimer);
+//    auto packet = check_and_cast<Packet *>(txSignal->getEncapsulatedPacket());
+//    b transmittedLength = getPushPacketProcessedLength(packet, inputGate);
+//    packet->eraseAtBack(packet->getTotalLength() - transmittedLength);
+//    auto signal = encodePacket(packet);
+//    EV_INFO << "Aborting transmission: packetName = " << packet->getName() << ", length = " << packet->getTotalLength() << ", duration = " << signal->getDuration() << std::endl;
+//    emit(transmissionEndedSignal, signal);
+//    sendPacketEnd(signal);
+//    producer->handlePushPacketProcessed(packet, inputGate->getPathStartGate(), false);
+//    txStartTime = -1;
+//    producer->handleCanPushPacket(inputGate->getPathStartGate());
+//}
 
 clocktime_t StreamThroughTransmitter::calculateDuration(const Packet *packet) const
 {
@@ -139,7 +134,7 @@ void StreamThroughTransmitter::scheduleTxEndTimer(Signal *signal)
 
 b StreamThroughTransmitter::getPushPacketProcessedLength(Packet *packet, cGate *gate)
 {
-    if (txPacket == nullptr)
+    if (txSignal == nullptr)
         return b(0);
     clocktime_t transmissionDuration = getClockTime() - txStartTime;
     return b(std::floor(datarate.get() * transmissionDuration.dbl()));

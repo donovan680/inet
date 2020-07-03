@@ -40,6 +40,7 @@ void EthernetCutthroughSource::initialize(int stage)
 void EthernetCutthroughSource::handleMessage(cMessage *message)
 {
     if (message == cutthroughTimer) {
+        ASSERT(streamedPacket != nullptr);
         const auto& header = streamedPacket->peekAtFront<Ieee8023MacAddresses>();
         int interfaceId = macTable->getInterfaceIdForAddress(header->getDest());
         macTable->updateTableWithAddress(interfaceEntry->getInterfaceId(), header->getSrc());

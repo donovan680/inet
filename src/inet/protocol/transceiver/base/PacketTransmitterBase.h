@@ -36,11 +36,18 @@ class INET_API PacketTransmitterBase : public ClockUsingModuleMixin<PacketProces
     cGate *outputGate = nullptr;
     IActivePacketSource *producer = nullptr;
 
+    int txId = -1;
+    Signal *txSignal = nullptr;
+
   protected:
     virtual void initialize(int stage) override;
     virtual void handleMessage(cMessage *message) override;
 
     virtual Signal *encodePacket(const Packet *packet) const;
+
+    virtual void sendPacketStart(Signal *signal);
+    virtual void sendPacketProgress(Signal *signal, b bitPosition, clocktime_t timePosition);
+    virtual void sendPacketEnd(Signal *signal);
 
     virtual clocktime_t calculateDuration(const Packet *packet) const = 0;
 

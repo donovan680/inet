@@ -53,7 +53,7 @@ Signal *PacketTransmitterBase::encodePacket(const Packet *txPacket) const
     packetEvent->setDatarate(packet->getTotalLength() / s(duration.dbl()));
     insertPacketEvent(this, packet, PEK_TRANSMITTED, bitTransmissionTime, packetEvent);
     increaseTimeTag<TransmissionTimeTag>(packet, bitTransmissionTime);
-    if (auto channel = dynamic_cast<cTransmissionChannel *>(outputGate->findTransmissionChannel())) {
+    if (auto channel = dynamic_cast<cDatarateChannel *>(outputGate->findTransmissionChannel())) {
         insertPacketEvent(this, packet, PEK_PROPAGATED, channel->getDelay());
         increaseTimeTag<PropagationTimeTag>(packet, channel->getDelay());
     }
@@ -67,6 +67,30 @@ Signal *PacketTransmitterBase::encodePacket(const Packet *txPacket) const
     signal->encapsulate(packet);
     signal->setDuration(CLOCKTIME_AS_SIMTIME(duration));
     return signal;
+}
+
+void PacketTransmitterBase::sendPacketStart(Signal *signal)
+{
+    // TODO: datarate
+    txId = signal->getId();
+    std::string name = std::string(signal->getName()) + "@start";
+    signal->setName(name.c_str());
+    const_cast<cPacket *>(signal->getEncapsulatedPacket())->setName(name.c_str()); // KLUDGE:
+    send(signal, SendOptions().duration(signal->getDuration()), outputGate);
+}
+
+void PacketTransmitterBase::sendPacketProgress(Signal *signal, b bitPosition, clocktime_t timePosition)
+{
+    // TODO:
+}
+
+void PacketTransmitterBase::sendPacketEnd(Signal *signal)
+{
+    // TODO: datarate
+    std::string name = std::string(signal->getName()) + "@end";
+    signal->setName(name.c_str());
+    const_cast<cPacket *>(signal->getEncapsulatedPacket())->setName(name.c_str()); // KLUDGE:
+    send(signal, SendOptions().duration(signal->getDuration()).updateTx(txId, 0), outputGate);
 }
 
 } // namespace inet

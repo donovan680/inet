@@ -16,7 +16,7 @@
 package inet.examples.ethernet.cutthrough;
 
 import inet.networks.WiredNetworkBase;
-import inet.node.ethernet.Eth100M;
+import inet.node.ethernet.EtherLink;
 import inet.node.ethernet.EtherSwitch;
 import inet.node.inet.StandardHost;
 
@@ -36,8 +36,8 @@ network EthernetCutthroughExample extends WiredNetworkBase
             @display("p=550,100");
         }
     connections:
-        host1.ethg++ <--> Eth100M <--> switch1.ethg++;
-        switch1.ethg++ <--> Eth100M <--> switch2.ethg++;
-        switch2.ethg++ <--> Eth100M <--> host2.ethg++;
+        host1.ethg++ <--> EtherLink <--> switch1.ethg++;
+        switch1.ethg++ <--> EtherLink <--> switch2.ethg++;
+        switch2.ethg++ <--> EtherLink <--> host2.ethg++;
 }
 

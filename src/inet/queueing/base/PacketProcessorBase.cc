@@ -16,6 +16,7 @@
 //
 
 #include "inet/common/ModuleAccess.h"
+#include "inet/protocol/common/cProgress.h"
 #include "inet/queueing/base/PacketProcessorBase.h"
 
 namespace inet {
@@ -125,7 +126,8 @@ void PacketProcessorBase::pushOrSendPacketStart(Packet *packet, cGate *gate, IPa
         consumer->pushPacketStart(packet, gate->getPathEndGate(), datarate);
     }
     else
-        sendPacketStart(packet, gate, 0, packet->getDuration(), bps(datarate).get());
+        // TODO: datarate
+        send(packet, SendOptions().duration(packet->getDuration()), gate);
 }
 
 void PacketProcessorBase::pushOrSendPacketEnd(Packet *packet, cGate *gate, IPassivePacketSink *consumer, bps datarate)
@@ -135,7 +137,7 @@ void PacketProcessorBase::pushOrSendPacketEnd(Packet *packet, cGate *gate, IPass
         consumer->pushPacketEnd(packet, gate->getPathEndGate(), datarate);
     }
     else
-        sendPacketEnd(packet, gate, 0, packet->getDuration(), bps(datarate).get());
+        send(packet, SendOptions().duration(packet->getDuration()), gate); // TODO: bps(datarate).get());
 }
 
 void PacketProcessorBase::pushOrSendPacketProgress(Packet *packet, cGate *gate, IPassivePacketSink *consumer, bps datarate, b position, b extraProcessableLength)
@@ -145,7 +147,9 @@ void PacketProcessorBase::pushOrSendPacketProgress(Packet *packet, cGate *gate, 
         consumer->pushPacketProgress(packet, gate->getPathEndGate(), datarate, position, extraProcessableLength);
     }
     else
-        sendPacketProgress(packet, gate, 0, packet->getDuration(), bps(datarate).get(), b(position).get(), 0, b(extraProcessableLength).get());
+        throw cRuntimeError("TODO");
+        // TODO:
+//        sendPacketProgress(packet, gate, 0, packet->getDuration(), bps(datarate).get(), b(position).get(), 0, b(extraProcessableLength).get());
 }
 
 void PacketProcessorBase::pushOrSendProgress(Packet *packet, cGate *gate, IPassivePacketSink *consumer, int progressKind, bps datarate, b position, b extraProcessableLength)
@@ -155,7 +159,8 @@ void PacketProcessorBase::pushOrSendProgress(Packet *packet, cGate *gate, IPassi
         pushProgress(packet, gate, consumer, progressKind, datarate, position, extraProcessableLength);
     }
     else
-        sendProgress(packet, gate, 0, packet->getDuration(), progressKind, bps(datarate).get(), b(position).get(), 0, b(extraProcessableLength).get(), 0);
+        throw cRuntimeError("TODO");
+//        sendProgress(packet, gate, 0, packet->getDuration(), progressKind, bps(datarate).get(), b(position).get(), 0, b(extraProcessableLength).get(), 0);
 }
 
 void PacketProcessorBase::pushProgress(Packet *packet, cGate *gate, IPassivePacketSink *consumer, int progressKind, bps datarate, b position, b extraProcessableLength)
@@ -191,7 +196,7 @@ void PacketProcessorBase::updateDisplayString() const
     }
 }
 
-void PacketProcessorBase::animateSend(cMessage *message, cGate *gate) const
+void PacketProcessorBase::animateSend(cMessage *message, cGate *gate, simtime_t duration) const
 {
     auto endGate = gate->getPathEndGate();
     message->setArrival(endGate->getOwnerModule()->getId(), endGate->getId(), simTime());
@@ -201,7 +206,7 @@ void PacketProcessorBase::animateSend(cMessage *message, cGate *gate) const
         if (gate->getNextGate() != nullptr) {
             envir->beginSend(message);
             while (gate->getNextGate() != nullptr) {
-                envir->messageSendHop(message, gate);
+                envir->messageSendHop(message, gate, 0, duration, false);
                 gate = gate->getNextGate();
             }
             envir->endSend(message);
@@ -212,7 +217,7 @@ void PacketProcessorBase::animateSend(cMessage *message, cGate *gate) const
 void PacketProcessorBase::animateSendPacket(Packet *packet, cGate *gate) const
 {
     if (getEnvir()->isGUI())
-        animateSend(packet, gate);
+        animateSend(packet, gate, 0);
 }
 
 void PacketProcessorBase::animateSendPacketStart(Packet *packet, cGate *gate, bps datarate) const
@@ -233,29 +238,33 @@ void PacketProcessorBase::animateSendPacketProgress(Packet *packet, cGate *gate,
 void PacketProcessorBase::animateSendProgress(Packet *packet, cGate *gate, int progressKind, bps datarate, b position, b extraProcessableLength) const
 {
     if (getEnvir()->isGUI()) {
-        auto progressMessage = createProgressMessage(packet, progressKind, datarate, position, extraProcessableLength);
-        animateSend(progressMessage, gate);
-        delete progressMessage;
+        datarate = Mbps(100);
+        simtime_t duration = s((packet->getTotalLength() - position) / datarate).get();
+        packet->setDuration(duration);
+        animateSend(packet, gate, duration);
+//        auto progressMessage = createProgressMessage(packet, progressKind, datarate, position, extraProcessableLength);
+//        animateSend(progressMessage, gate);
+//        delete progressMessage;
     }
 }
 
-cMessage *PacketProcessorBase::createProgressMessage(Packet *packet, int progressKind, bps datarate, b position, b extraProcessableLength) const
-{
-    std::string name = packet->getName();
-    switch (progressKind) {
-        case cProgress::PACKET_START: name += "-start"; break;
-        case cProgress::PACKET_END: name += "-end"; break;
-        case cProgress::PACKET_PROGRESS: name += "-progress"; break;
-    }
-    cProgress *progressMessage = new cProgress(name.c_str(), progressKind);
-    progressMessage->setPacket(packet->dup());
-    progressMessage->setDatarate(bps(datarate).get());
-    progressMessage->setBitPosition(b(position).get());
-    progressMessage->setTimePosition(-1);
-    progressMessage->setExtraProcessableBitLength(b(extraProcessableLength).get());
-    progressMessage->setExtraProcessableDuration(-1);
-    return progressMessage;
-}
+//cMessage *PacketProcessorBase::createProgressMessage(Packet *packet, int progressKind, bps datarate, b position, b extraProcessableLength) const
+//{
+//    std::string name = packet->getName();
+//    switch (progressKind) {
+//        case cProgress::PACKET_START: name += "-start"; break;
+//        case cProgress::PACKET_END: name += "-end"; break;
+//        case cProgress::PACKET_PROGRESS: name += "-progress"; break;
+//    }
+//    cProgress *progressMessage = new cProgress(name.c_str(), progressKind);
+//    progressMessage->setPacket(packet->dup());
+//    progressMessage->setDatarate(bps(datarate).get());
+//    progressMessage->setBitPosition(b(position).get());
+//    progressMessage->setTimePosition(-1);
+//    progressMessage->setExtraProcessableBitLength(b(extraProcessableLength).get());
+//    progressMessage->setExtraProcessableDuration(-1);
+//    return progressMessage;
+//}
 
 const char *PacketProcessorBase::resolveDirective(char directive) const
 {

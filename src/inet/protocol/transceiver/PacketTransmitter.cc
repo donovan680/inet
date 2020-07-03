@@ -57,7 +57,7 @@ void PacketTransmitter::startTx(Packet *packet)
     ASSERT(txSignal == nullptr);
     txSignal = encodePacket(packet);
     emit(transmissionStartedSignal, txSignal);
-    sendDelayed(txSignal->dup(), 0, outputGate, txSignal->getDuration());
+    send(txSignal->dup(), SendOptions().duration(txSignal->getDuration()), outputGate);
     scheduleTxEndTimer(txSignal);
 }
 

@@ -35,8 +35,6 @@ class INET_API StreamingTransmitter : public OperationalMixin<PacketTransmitterB
 
     simtime_t txStartTime = -1;
     cMessage *txEndTimer = nullptr;
-    Packet *txPacket = nullptr;
-    Signal *txSignal = nullptr;
 
   protected:
     virtual void initialize(int stage) override;

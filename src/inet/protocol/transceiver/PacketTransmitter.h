@@ -29,8 +29,6 @@ class INET_API PacketTransmitter : public PacketTransmitterBase
 
     cMessage *txEndTimer = nullptr;
 
-    Signal *txSignal = nullptr;
-
   protected:
     virtual void initialize(int stage) override;
     virtual void handleMessage(cMessage *message) override;

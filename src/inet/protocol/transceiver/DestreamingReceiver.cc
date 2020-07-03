@@ -23,8 +23,10 @@ void DestreamingReceiver::initialize(int stage)
 {
     PacketReceiverBase::initialize(stage);
     OperationalMixin::initialize(stage);
-    if (stage == INITSTAGE_LOCAL)
+    if (stage == INITSTAGE_LOCAL) {
         datarate = bps(par("datarate"));
+        inputGate->setDeliverOnReceptionStart(true);
+    }
 }
 
 DestreamingReceiver::~DestreamingReceiver()
@@ -34,8 +36,18 @@ DestreamingReceiver::~DestreamingReceiver()
 
 void DestreamingReceiver::handleMessageWhenUp(cMessage *message)
 {
-    if (message->getArrivalGate() == inputGate)
-        receiveFromMedium(message);
+    if (message->getArrivalGate() == inputGate) {
+        auto signal = check_and_cast<Signal *>(message);
+        if (!signal->isUpdate())
+            // KLUDGE: datarate
+            receivePacketStart(signal, inputGate, datarate.get());
+        else if (signal->getRemainingDuration() == 0)
+            // KLUDGE: datarate
+            receivePacketEnd(signal, inputGate, datarate.get());
+        // TODO:
+//        else
+//            receivePacketProgress(signal, inputGate, datarate.get());
+    }
     else
         PacketReceiverBase::handleMessage(message);
 }

@@ -16,7 +16,7 @@
 package inet.examples.ethernet.preemption;
 
 import inet.networks.WiredNetworkBase;
-import inet.node.ethernet.Eth100M;
+import inet.node.ethernet.EtherLink;
 import inet.node.inet.StandardHost;
 
 network EthernetPreemptionExample extends WiredNetworkBase
@@ -29,6 +29,6 @@ network EthernetPreemptionExample extends WiredNetworkBase
             @display("p=350,100");
         }
     connections:
-        host1.ethg++ <--> Eth100M <--> host2.ethg++;
+        host1.ethg++ <--> EtherLink <--> host2.ethg++;
 }
 

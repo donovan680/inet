@@ -28,17 +28,16 @@ class INET_API StreamThroughTransmitter : public PacketTransmitterBase
 
     clocktime_t txStartTime = -1;
     cMessage *txEndTimer = nullptr;
-    Packet *txPacket = nullptr;
 
   protected:
     virtual void initialize(int stage) override;
     virtual void handleMessage(cMessage *message) override;
 
-    virtual bool isTransmitting() const { return txPacket != nullptr; }
+    virtual bool isTransmitting() const { return txSignal != nullptr; }
 
     virtual void startTx(Packet *packet);
     virtual void endTx();
-    virtual void abortTx();
+//    virtual void abortTx();
 
     virtual clocktime_t calculateDuration(const Packet *packet) const override;
 
@@ -49,8 +48,8 @@ class INET_API StreamThroughTransmitter : public PacketTransmitterBase
 
     virtual bool supportsPacketStreaming(cGate *gate) const override { return true; }
 
-    virtual bool canPushSomePacket(cGate *gate) const override { return txPacket == nullptr; };
-    virtual bool canPushPacket(Packet *packet, cGate *gate) const override { return txPacket == nullptr; };
+    virtual bool canPushSomePacket(cGate *gate) const override { return txSignal == nullptr; };
+    virtual bool canPushPacket(Packet *packet, cGate *gate) const override { return txSignal == nullptr; };
     virtual void pushPacket(Packet *packet, cGate *gate) override;
     virtual void pushPacketStart(Packet *packet, cGate *gate, bps datarate) override;
     virtual void pushPacketEnd(Packet *packet, cGate *gate, bps datarate) override;

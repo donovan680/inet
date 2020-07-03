@@ -58,27 +58,27 @@ void ThruputMeteringChannel::initialize()
     fmt = par("thruputDisplayFormat");
 }
 
-void ThruputMeteringChannel::processMessage(cMessage *msg, simtime_t t, result_t& result)
-{
-    cDatarateChannel::processMessage(msg, t, result);
-
-    cPacket *pkt = dynamic_cast<cPacket *>(msg);
-    // TODO handle disabled state (show with different style?/color? or print "disabled"?)
-    if (!pkt || !fmt || *fmt == 0 || result.discard)
-        return;
-
-    // count packets and bits
-    numPackets++;
-    numBits += pkt->getBitLength();
-
-    // packet should be counted to new interval
-    if (intvlNumPackets >= batchSize || t - intvlStartTime >= maxInterval)
-        beginNewInterval(t);
-
-    intvlNumPackets++;
-    intvlNumBits += pkt->getBitLength();
-    intvlLastPkTime = t;
-}
+//void ThruputMeteringChannel::processMessage(cMessage *msg, simtime_t t, result_t& result)
+//{
+//    cDatarateChannel::processMessage(msg, t, result);
+//
+//    cPacket *pkt = dynamic_cast<cPacket *>(msg);
+//    // TODO handle disabled state (show with different style?/color? or print "disabled"?)
+//    if (!pkt || !fmt || *fmt == 0 || result.discard)
+//        return;
+//
+//    // count packets and bits
+//    numPackets++;
+//    numBits += pkt->getBitLength();
+//
+//    // packet should be counted to new interval
+//    if (intvlNumPackets >= batchSize || t - intvlStartTime >= maxInterval)
+//        beginNewInterval(t);
+//
+//    intvlNumPackets++;
+//    intvlNumBits += pkt->getBitLength();
+//    intvlLastPkTime = t;
+//}
 
 void ThruputMeteringChannel::beginNewInterval(simtime_t now)
 {

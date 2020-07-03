@@ -39,9 +39,9 @@ class INET_API StreamThroughReceiver : public OperationalMixin<PacketReceiverBas
     virtual void handleMessageWhenUp(cMessage *message) override;
     virtual void handleMessageWhenDown(cMessage *message) override;
 
-    virtual void receivePacketStart(cPacket *packet, cGate *gate, double datarate) override;
-    virtual void receivePacketProgress(cPacket *packet, cGate *gate, double datarate, int bitPosition, simtime_t timePosition, int extraProcessableBitLength, simtime_t extraProcessableDuration) override;
-    virtual void receivePacketEnd(cPacket *packet, cGate *gate, double datarate) override;
+    virtual void receivePacketStart(cPacket *packet, cGate *gate, double datarate);
+    virtual void receivePacketProgress(cPacket *packet, cGate *gate, double datarate, int bitPosition, simtime_t timePosition, int extraProcessableBitLength, simtime_t extraProcessableDuration);
+    virtual void receivePacketEnd(cPacket *packet, cGate *gate, double datarate);
 
     // for lifecycle:
     virtual bool isInitializeStage(int stage) override { return stage == INITSTAGE_LINK_LAYER; }

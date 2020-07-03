@@ -62,7 +62,7 @@ class INET_API MessageDispatcher : public queueing::PacketProcessorBase, public 
 
   protected:
     virtual void initialize(int stage) override;
-    virtual void arrived(cMessage *message, cGate *inGate, simtime_t t) override;
+    virtual void arrived(cMessage *message, cGate *gate, const SendOptions& options, simtime_t time) override;
     virtual cGate *handlePacket(Packet *packet, cGate *inGate);
     virtual cGate *handleMessage(Message *request, cGate *inGate);
 

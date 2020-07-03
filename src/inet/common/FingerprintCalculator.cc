@@ -90,16 +90,24 @@ bool FingerprintCalculator::addEventIngredient(cEvent *event, cSingleFingerprint
 
 void FingerprintCalculator::addEvent(cEvent *event)
 {
-    if (filterProgress) {
-        if (auto progress = dynamic_cast<cProgress*>(event)) {
-            if (progress->getKind() != cProgress::PACKET_END)
-                return;
-            auto packet = progress->getPacket();
-            packet->setArrival(progress->getArrivalModuleId(), progress->getArrivalGateId(), progress->getArrivalTime());
-            packet->setSentFrom(progress->getSenderModule(), progress->getSenderGateId(), progress->getSendingTime());
-            event = packet;
-        }
-    }
+//    if (filterProgress) {
+//        if (auto progress = dynamic_cast<cProgress*>(event)) {
+//            if (progress->getKind() != cProgress::PACKET_END)
+//                return;
+//            auto packet = progress->getPacket();
+//            packet->setArrival(progress->getArrivalModuleId(), progress->getArrivalGateId(), progress->getArrivalTime());
+//            packet->setSentFrom(progress->getSenderModule(), progress->getSenderGateId(), progress->getSendingTime());
+//            event = packet;
+//        }
+//    }
+//    if (event->isMessage()) {
+//        auto msg = static_cast<cMessage *>(event);
+//        if (msg->isPacket()) {
+//            auto packet = static_cast<cPacket *>(msg);
+//            if (packet->getRemainingDuration() != 0)
+//                return;
+//        }
+//    }
 
     if (!filterEvents) {
         cSingleFingerprintCalculator::addEvent(event);
@@ -107,7 +115,7 @@ void FingerprintCalculator::addEvent(cEvent *event)
     else {
         if (event->isMessage()) {
             auto msg = static_cast<cMessage *>(event);
-            if (! msg->isSelfMessage()) {
+            if (!msg->isSelfMessage()) {
                 auto senderNode = findContainingNode(msg->getSenderModule());
                 auto arrivalNode = findContainingNode(msg->getArrivalModule());
                 if (senderNode != arrivalNode)

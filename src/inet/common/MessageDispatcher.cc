@@ -39,7 +39,7 @@ void MessageDispatcher::initialize(int stage)
     }
 }
 
-void MessageDispatcher::arrived(cMessage *message, cGate *inGate, simtime_t t)
+void MessageDispatcher::arrived(cMessage *message, cGate *inGate, const SendOptions& options, simtime_t t)
 {
     Enter_Method_Silent();
     cGate *outGate = nullptr;
@@ -50,7 +50,7 @@ void MessageDispatcher::arrived(cMessage *message, cGate *inGate, simtime_t t)
     }
     else
         outGate = handleMessage(check_and_cast<Message *>(message), inGate);
-    outGate->deliver(message, t);
+    outGate->deliver(message, SendOptions(), t);
     updateDisplayString();
 }
 
