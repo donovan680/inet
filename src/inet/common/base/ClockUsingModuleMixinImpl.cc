@@ -1,5 +1,5 @@
 //
-// Copyright (C) OpenSim Ltd
+// Copyright (C) OpenSim Ltd.
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public License
@@ -15,6 +15,7 @@
 // along with this program; if not, see <http://www.gnu.org/licenses/>.
 //
 
+#include "inet/applications/base/ApplicationBase.h"
 #include "inet/common/base/ClockUsingModuleMixinImpl.h"
 #ifdef WITH_QUEUEING
 #include "inet/queueing/base/PacketGateBase.h"
@@ -26,6 +27,7 @@ namespace inet {
 
 #ifdef WITH_CLOCK_SUPPORT
 template class ClockUsingModuleMixin<cSimpleModule>;
+template class ClockUsingModuleMixin<ApplicationBase>;
 
 #ifdef WITH_QUEUEING
 template class ClockUsingModuleMixin<queueing::PacketProcessorBase>;
@@ -36,3 +38,4 @@ template class ClockUsingModuleMixin<queueing::PacketGateBase>;
 #endif // #ifdef WITH_CLOCK_SUPPORT
 
 } // namespace inet
+
