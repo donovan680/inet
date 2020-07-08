@@ -16,9 +16,11 @@
 //
 
 #include "inet/common/base/ClockUsingModuleMixinImpl.h"
+#ifdef WITH_QUEUEING
 #include "inet/queueing/base/PacketGateBase.h"
 #include "inet/queueing/base/PacketProcessorBase.h"
 #include "inet/queueing/base/PacketPusherBase.h"
+#endif // #ifdef WITH_QUEUEING
 
 namespace inet {
 
