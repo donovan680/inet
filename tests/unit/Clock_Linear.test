@@ -1,0 +1,42 @@
+%description:
+Tests GranularityClock:
+
+%#--------------------------------------------------------------------------------------------------------------
+%inifile: omnetpp.ini
+[General]
+ned-path = .;../../../../src;../../lib
+network = inet.test.unittest.lib.ClockTestNetwork
+cmdenv-express-mode = false
+cmdenv-log-prefix = "C:%C: "
+
+*.host.clock.typename = "LinearClock"
+*.host.clock.origin = 0.03s
+*.host.clock.driftRate = 1000ppm
+%#--------------------------------------------------------------------------------------------------------------
+%contains: stdout
+Running simulation...
+** Event #1  t=0   ClockTestNetwork.host.app (ClockTestApp, id=4)
+C:(ClockTestApp)ClockTestNetwork.host.app: arrived: 0
+C:(ClockTestApp)ClockTestNetwork.host.app: schedule to clock: 1.1, scheduled simtime: 1.1311, scheduled clock: 1.1
+** Event #2  t=1.1311   ClockTestNetwork.host.app (ClockTestApp, id=4)
+C:(ClockTestApp)ClockTestNetwork.host.app: arrived: 1.1311
+C:(ClockTestApp)ClockTestNetwork.host.app: schedule to clock: 2.11, scheduled simtime: 2.14211, scheduled clock: 2.11
+** Event #3  t=2.14211   ClockTestNetwork.host.app (ClockTestApp, id=4)
+C:(ClockTestApp)ClockTestNetwork.host.app: arrived: 2.14211
+C:(ClockTestApp)ClockTestNetwork.host.app: schedule to clock: 2.89, scheduled simtime: 2.92289, scheduled clock: 2.89
+** Event #4  t=2.92289   ClockTestNetwork.host.app (ClockTestApp, id=4)
+C:(ClockTestApp)ClockTestNetwork.host.app: arrived: 2.92289
+C:(ClockTestApp)ClockTestNetwork.host.app: schedule to clock: 2.9999999, scheduled simtime: 3.0329998999, scheduled clock: 2.9999999
+** Event #5  t=3.0329998999   ClockTestNetwork.host.app (ClockTestApp, id=4)
+C:(ClockTestApp)ClockTestNetwork.host.app: arrived: 3.0329998999
+C:(ClockTestApp)ClockTestNetwork.host.app: schedule to clock: 3.11, scheduled simtime: 3.14311, scheduled clock: 3.11
+** Event #6  t=3.14311   ClockTestNetwork.host.app (ClockTestApp, id=4)
+C:(ClockTestApp)ClockTestNetwork.host.app: arrived: 3.14311
+
+<!> No more events, simulation completed -- at t=3.14311s, event #6
+%#--------------------------------------------------------------------------------------------------------------
+%not-contains: stdout
+undisposed object:
+%not-contains: stdout
+-- check module destructor
+%#--------------------------------------------------------------------------------------------------------------
