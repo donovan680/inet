@@ -59,11 +59,12 @@ ClockUsingModuleMixin<T>::~ClockUsingModuleMixin() {
 template<typename T>
 void ClockUsingModuleMixin<T>::initialize(int stage) {
     T::initialize(stage);
-    if (stage == 0)
+    if (stage == INITSTAGE_LOCAL) {
         clock = findClockModule();
 #ifndef NDEBUG
-    className = T::getClassName();
+        className = T::getClassName();
 #endif
+    }
 }
 
 template<typename T>
