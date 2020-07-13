@@ -21,18 +21,18 @@ Define_Module(LinearClock);
 
 void LinearClock::initialize()
 {
-    origin = par("origin");
+    timeShift = par("timeShift");
     driftRate = par("driftRate").doubleValue() / 1e6;
 }
 
 clocktime_t LinearClock::fromSimTime(simtime_t t) const
 {
-    return ClockTime::from((t-origin) / (1 + driftRate));
+    return ClockTime::from((t-timeShift) / (1 + driftRate));
 }
 
 simtime_t LinearClock::toSimTime(clocktime_t clock) const
 {
-    return clock.asSimTime() * (1 + driftRate) + origin;
+    return clock.asSimTime() * (1 + driftRate) + timeShift;
 }
 
 clocktime_t LinearClock::getArrivalClockTime(cMessage *msg) const

@@ -26,7 +26,7 @@ namespace inet {
 class INET_API LinearClock : public PredictableClockBase
 {
   private:
-    simtime_t origin;
+    simtime_t timeShift;
     double driftRate;
 
   public:

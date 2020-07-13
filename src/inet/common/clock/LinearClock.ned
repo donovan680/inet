@@ -23,8 +23,7 @@ import inet.common.clock.contract.IClock;
 simple LinearClock like IClock
 {
     parameters:
-        double origin @unit(s) = default(0s); // the simulation time when the clock's value is zero
-        //TODO rename to: offset? startTime? timeShift? 
+        double timeShift @unit(s) = default(0s); // the simulation time when the clock's value is zero
         double driftRate @unit(ppm) = default(0ppm); // clock precision, expressed as a ratio in parts per million
         @display("i=block/timer");
 }
