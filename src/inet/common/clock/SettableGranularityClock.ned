@@ -23,7 +23,7 @@ import inet.common.clock.contract.IClock;
 simple SettableGranularityClock like IClock
 {
     parameters:
-        double origin @unit(s) = default(0s); // set the clock time to this value at the initialize and at the parameter change
+        double timeShift @unit(s) = default(0s); // set the clock time to simtime + timeShift at initialize
         double driftRate @unit(ppm) = default(0ppm); // clock precision, expressed as a ratio in parts per million
         double granularity @unit(s) = default(1ms);     // clock granularity, 0 means the simtime precision
         @display("i=block/timer");

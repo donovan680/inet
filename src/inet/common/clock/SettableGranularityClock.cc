@@ -22,23 +22,11 @@ Define_Module(SettableGranularityClock);
 void SettableGranularityClock::initialize()
 {
     origin.simtime = simTime();
-    origin.clocktime = ClockTime::from(origin.simtime);
-    driftRate = 0.0;
+    simtime_t clock = par("timeShift");
+    origin.clocktime = ClockTime::from(simTime() + clock);
+    driftRate = par("driftRate").doubleValue() / 1e6;
+    setGranularity(par("granularity"));
 }
-
-void SettableGranularityClock::handleParameterChange(const char *name)
-{
-    if (name == nullptr || !strcmp(name, "origin")) {
-        setClockTime(par("origin"));
-    }
-    if (name == nullptr || !strcmp(name, "driftRate")) {
-        setDriftRate(par("driftRate").doubleValue() / 1e6);
-    }
-    if (name == nullptr || !strcmp(name, "granularity")) {
-        setGranularity(par("granularity"));
-    }
-}
-
 
 clocktime_t SettableGranularityClock::getClockTime() const
 {
@@ -53,7 +41,8 @@ void SettableGranularityClock::scheduleClockEvent(clocktime_t t, cMessage *msg)
         if (it->arrivalTime.simtime <= now)
             it = timers.erase(it);
         else {
-            ASSERT(it->msg != msg);
+            if (it->msg == msg)
+                throw cRuntimeError("Message already scheduled");
             ++it;
         }
     }
@@ -118,6 +107,7 @@ void SettableGranularityClock::rescheduleTimers()
 void SettableGranularityClock::setDriftRate(double newDriftRate)
 {
     driftRate = newDriftRate;
+    EV_DEBUG << "set driftRate to " << driftRate << " at " << simTime() << endl;
     rescheduleTimers();
 }
 
@@ -125,6 +115,7 @@ void SettableGranularityClock::setClockTime(clocktime_t t)
 {
     origin.simtime = simTime();
     origin.clocktime = t;
+    EV_DEBUG << "set clock time to " << origin.clocktime << " at " << origin.simtime << endl;
     rescheduleTimers();
 }
 
@@ -135,6 +126,24 @@ void SettableGranularityClock::setGranularity(clocktime_t t)
         throw cRuntimeError("incorrect granularity value: %s, granularity must be 0 or positive value", granularity.str().c_str());
     if (granularity == CLOCKTIME_ZERO)
         granularity.setRaw(1);
+}
+
+void SettableGranularityClock::processCommand(const cXMLElement& node)
+{
+    if (!strcmp(node.getTagName(), "set-clock")) {
+        if (const char *clockTimeStr = node.getAttribute("time")) {
+            EV_DEBUG << "processCommand: set clock time to " << clockTimeStr << endl;
+            clocktime_t t = ClockTime::parse(clockTimeStr);
+            setClockTime(t);
+        }
+        if (const char *driftRateStr = node.getAttribute("driftRate")) {
+            EV_DEBUG << "processCommand: set drift rate to " << driftRateStr << endl;
+            double rate = strtod(driftRateStr, nullptr);
+            setDriftRate(rate);
+        }
+    }
+    else
+        throw cRuntimeError("invalid command node for %s at %s", getClassName(), node.getSourceLocation());
 }
 
 clocktime_t SettableGranularityClock::fromSimTime(simtime_t t) const
