@@ -1,0 +1,47 @@
+%description:
+Tests GranularityClock:
+
+%#--------------------------------------------------------------------------------------------------------------
+%inifile: omnetpp.ini
+[General]
+ned-path = .;../../../../src;../../lib
+network = inet.test.unittest.lib.ClockTestNetwork
+cmdenv-express-mode = false
+cmdenv-log-prefix = "C:%C: "
+
+*.host.clock.typename = "SettableGranularityClock"
+*.host.clock.timeShift = 0.03s
+*.host.clock.driftRate = 1e5ppm
+*.host.clock.granularity = 1ms
+*.scenarioManager.script = xml('<scenario><set-param t="2.5s" module="host.clock" par="origin" value="2.5s"/></scenario>')
+%#--------------------------------------------------------------------------------------------------------------
+%contains: stdout
+Running simulation...
+** Event #1  t=0   ClockTestNetwork.host.app (ClockTestApp, id=4)
+C:(ClockTestApp)ClockTestNetwork.host.app: arrived: 0
+C:(ClockTestApp)ClockTestNetwork.host.app: schedule to clock: 1.1, scheduled simtime: 1.21, scheduled clock: 1.1
+** Event #2  t=1.21   ClockTestNetwork.host.app (ClockTestApp, id=4)
+C:(ClockTestApp)ClockTestNetwork.host.app: arrived: 1.21
+C:(ClockTestApp)ClockTestNetwork.host.app: schedule to clock: 2.11, scheduled simtime: 2.321, scheduled clock: 2.11
+** Event #3  t=2.321   ClockTestNetwork.host.app (ClockTestApp, id=4)
+C:(ClockTestApp)ClockTestNetwork.host.app: arrived: 2.321
+C:(ClockTestApp)ClockTestNetwork.host.app: schedule to clock: 2.89, scheduled simtime: 3.179, scheduled clock: 2.89
+** Event #4  t=2.5   ClockTestNetwork.scenarioManager (ScenarioManager, id=3)
+C:(ScenarioManager)ClockTestNetwork.scenarioManager: processing <set-param> command...
+C:(ScenarioManager)ClockTestNetwork.scenarioManager: Setting ClockTestNetwork.host.clock.origin = 2.5s
+** Event #5  t=2.929   ClockTestNetwork.host.app (ClockTestApp, id=4)
+C:(ClockTestApp)ClockTestNetwork.host.app: arrived: 2.929
+C:(ClockTestApp)ClockTestNetwork.host.app: schedule to clock: 2.9999999, scheduled simtime: 3.05, scheduled clock: 3
+** Event #6  t=3.05   ClockTestNetwork.host.app (ClockTestApp, id=4)
+C:(ClockTestApp)ClockTestNetwork.host.app: arrived: 3.05
+C:(ClockTestApp)ClockTestNetwork.host.app: schedule to clock: 3.11, scheduled simtime: 3.171, scheduled clock: 3.11
+** Event #7  t=3.171   ClockTestNetwork.host.app (ClockTestApp, id=4)
+C:(ClockTestApp)ClockTestNetwork.host.app: arrived: 3.171
+
+<!> No more events, simulation completed -- at t=3.171s, event #7
+%#--------------------------------------------------------------------------------------------------------------
+%not-contains: stdout
+undisposed object:
+%not-contains: stdout
+-- check module destructor
+%#--------------------------------------------------------------------------------------------------------------
