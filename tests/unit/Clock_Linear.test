@@ -10,7 +10,7 @@ cmdenv-express-mode = false
 cmdenv-log-prefix = "C:%C: "
 
 *.host.clock.typename = "LinearClock"
-*.host.clock.origin = 0.03s
+*.host.clock.timeShift = 0.03s
 *.host.clock.driftRate = 1000ppm
 %#--------------------------------------------------------------------------------------------------------------
 %contains: stdout

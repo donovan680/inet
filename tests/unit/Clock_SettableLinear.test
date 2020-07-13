@@ -10,9 +10,9 @@ cmdenv-express-mode = false
 cmdenv-log-prefix = "C:%C: "
 
 *.host.clock.typename = "SettableLinearClock"
-*.host.clock.origin = 0.03s
+*.host.clock.timeShift = 0.03s
 *.host.clock.driftRate = 1000ppm
-*.scenarioManager.script = xml('<scenario><set-param t="2.5s" module="host.clock" par="origin" value="2.5s"/></scenario>')
+*.scenarioManager.script = xml('<scenario><set-clock t="2.5s" module="host.clock" time="2.5s"/></scenario>')
 %#--------------------------------------------------------------------------------------------------------------
 %contains: stdout
 Running simulation...
@@ -26,8 +26,9 @@ C:(ClockTestApp)ClockTestNetwork.host.app: schedule to clock: 2.11, scheduled si
 C:(ClockTestApp)ClockTestNetwork.host.app: arrived: 2.08208
 C:(ClockTestApp)ClockTestNetwork.host.app: schedule to clock: 2.89, scheduled simtime: 2.86286, scheduled clock: 2.89
 ** Event #4  t=2.5   ClockTestNetwork.scenarioManager (ScenarioManager, id=3)
-C:(ScenarioManager)ClockTestNetwork.scenarioManager: processing <set-param> command...
-C:(ScenarioManager)ClockTestNetwork.scenarioManager: Setting ClockTestNetwork.host.clock.origin = 2.5s
+C:(ScenarioManager)ClockTestNetwork.scenarioManager: processing <set-clock> command...
+C:(ScenarioManager)ClockTestNetwork.scenarioManager: processCommand: set clock time to 2.5s
+C:(ScenarioManager)ClockTestNetwork.scenarioManager: set clock time to 2.5 at 2.5
 ** Event #5  t=2.89039   ClockTestNetwork.host.app (ClockTestApp, id=4)
 C:(ClockTestApp)ClockTestNetwork.host.app: arrived: 2.89039
 C:(ClockTestApp)ClockTestNetwork.host.app: schedule to clock: 2.9999999, scheduled simtime: 3.0004998999, scheduled clock: 2.9999999
