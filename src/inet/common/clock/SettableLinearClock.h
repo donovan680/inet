@@ -73,7 +73,6 @@ class INET_API SettableLinearClock : public ClockBase, public IClock
     virtual void setClockTime(clocktime_t t);
 };
 
-//vektorra átír, handleparamchange, udpbasicapp
 } // namespace inet
 
 #endif // ifndef __INET_SettableLinearClock_H
