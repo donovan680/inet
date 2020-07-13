@@ -16,14 +16,16 @@
 #ifndef __INET_SettableLinearClock_H
 #define __INET_SettableLinearClock_H
 
-#include "inet/common/clock/base/PredictableClockBase.h"
+#include "inet/common/clock/base/ClockBase.h"
+#include "inet/common/clock/contract/IClock.h"
+#include "inet/common/scenario/IScriptable.h"
 
 namespace inet {
 
 /**
  * Models a clock with a constant clock drift rate.
  */
-class INET_API SettableLinearClock : public ClockBase, public IClock
+class INET_API SettableLinearClock : public ClockBase, public IClock, public IScriptable
 {
   private:
     struct TimePair {
@@ -39,14 +41,15 @@ class INET_API SettableLinearClock : public ClockBase, public IClock
     double driftRate;
     std::vector<Timer> timers;
 
-    //virtual simtime_t toSimTime(clocktime_t t) const override;
-
+  protected:
     void purgeTimers();
     void rescheduleTimers();
 
+    // IScriptable implementation
+    virtual void processCommand(const cXMLElement& node) override;
+
   public:
     virtual void initialize() override;
-    virtual void handleParameterChange(const char *parname) override;
 
     /**
      * Return the current time.

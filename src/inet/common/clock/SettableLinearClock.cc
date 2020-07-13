@@ -21,19 +21,11 @@ Define_Module(SettableLinearClock);
 
 void SettableLinearClock::initialize()
 {
-    origin.simtime = simTime();
-    origin.clocktime = ClockTime::from(origin.simtime);
     driftRate = 0.0;
-}
-
-void SettableLinearClock::handleParameterChange(const char *name)
-{
-    if (name == nullptr || !strcmp(name, "origin")) {
-        setClockTime(par("origin"));
-    }
-    if (name == nullptr || !strcmp(name, "driftRate")) {
-        setDriftRate(par("driftRate").doubleValue() / 1e6);
-    }
+    origin.simtime = simTime();
+    simtime_t clock = par("timeShift");
+    origin.clocktime = ClockTime::from(simTime() + clock);
+    driftRate = par("driftRate").doubleValue() / 1e6;
 }
 
 clocktime_t SettableLinearClock::getClockTime() const
@@ -119,6 +111,7 @@ void SettableLinearClock::rescheduleTimers()
 void SettableLinearClock::setDriftRate(double newDriftRate)
 {
     driftRate = newDriftRate;
+    EV_DEBUG << "set driftRate to " << driftRate << " at " << simTime() << endl;
     rescheduleTimers();
 }
 
@@ -126,8 +119,28 @@ void SettableLinearClock::setClockTime(clocktime_t t)
 {
     origin.simtime = simTime();
     origin.clocktime = t;
+    EV_DEBUG << "set clock time to " << origin.clocktime << " at " << origin.simtime << endl;
     rescheduleTimers();
 }
+
+void SettableLinearClock::processCommand(const cXMLElement& node)
+{
+    if (!strcmp(node.getTagName(), "set-clock")) {
+        if (const char *clockTimeStr = node.getAttribute("time")) {
+            EV_DEBUG << "processCommand: set clock time to " << clockTimeStr << endl;
+            clocktime_t t = ClockTime::parse(clockTimeStr);
+            setClockTime(t);
+        }
+        if (const char *driftRateStr = node.getAttribute("driftRate")) {
+            EV_DEBUG << "processCommand: set drift rate to " << driftRateStr << endl;
+            double rate = strtod(driftRateStr, nullptr);
+            setDriftRate(rate);
+        }
+    }
+    else
+        throw cRuntimeError("invalid command node for %s at %s", getClassName(), node.getSourceLocation());
+}
+
 
 } // namespace inet
 

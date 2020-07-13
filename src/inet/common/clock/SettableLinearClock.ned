@@ -22,8 +22,9 @@ import inet.common.clock.contract.IClock;
 //
 simple SettableLinearClock like IClock
 {
+    //TODO IScriptable instead of handleParameterChange
     parameters:
-        double origin @unit(s) = default(0s); // set the clock time to this value at the initialize and at the parameter change
+        double timeShift @unit(s) = default(0s); // set the clock time to simtime + timeShift at initialize
         double driftRate @unit(ppm) = default(0ppm); // clock precision, expressed as a ratio in parts per million
         @display("i=block/timer");
 }
