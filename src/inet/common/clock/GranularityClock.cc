@@ -25,18 +25,23 @@ void GranularityClock::initialize()
 {
     timeShift = par("timeShift");
     granularity = par("granularity");
+    if (granularity < CLOCKTIME_ZERO)
+        throw cRuntimeError("incorrect granularity value: %s, granularity must be 0 or positive value", granularity.str().c_str());
+    if (granularity == CLOCKTIME_ZERO)
+        granularity.setRaw(1);
+    driftRate = par("driftRate").doubleValue() / 1e6;
 }
 
 clocktime_t GranularityClock::fromSimTime(simtime_t t) const
 {
     auto granularityRaw = granularity.raw();
-    return ClockTime::from(SimTime().setRaw((t-timeShift).raw() / granularityRaw) * granularityRaw);
+    return ClockTime::from(SimTime().setRaw((t-timeShift / (1.0 + driftRate)).raw() / granularityRaw) * granularityRaw);
 }
 
 simtime_t GranularityClock::toSimTime(clocktime_t clock) const
 {
     auto granularityRaw = granularity.raw();
-    return SimTime().setRaw(((clock.raw() + granularityRaw - 1) / granularityRaw) * granularityRaw) + timeShift;
+    return SimTime().setRaw(((clock.raw() + granularityRaw - 1) / granularityRaw) * granularityRaw) * (1.0 + driftRate) + timeShift;
 }
 
 clocktime_t GranularityClock::getArrivalClockTime(cMessage *msg) const

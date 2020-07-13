@@ -26,7 +26,8 @@ simple GranularityClock like IClock
 {
     parameters:
         double timeShift @unit(s) = default(0s); // set the clock time to current simtime + timeShift value at the initialize
-        double granularity @unit(s) = default(1ms);     // clock granularity
+        double granularity @unit(s) = default(1ms);     // clock granularity, 0 means the simtime precision
+        double driftRate @unit(ppm) = default(0ppm); // clock precision, expressed as a ratio in parts per million
         @display("i=block/timer");
 }
 

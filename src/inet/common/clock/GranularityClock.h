@@ -29,7 +29,8 @@ class INET_API GranularityClock : public PredictableClockBase
 {
   private:
     simtime_t timeShift;
-    simtime_t granularity;
+    clocktime_t granularity;
+    double driftRate;
 
   public:
     virtual void initialize() override;
